@@ -50,13 +50,23 @@ async function generateGrid() {
   // Cornice
   let frameBytes;
   if (frameFile) {
+    // usa la cornice caricata dall'utente
     frameBytes = await frameFile.arrayBuffer();
+    const ext = frameFile.name.split(".").pop().toLowerCase();
+    if (ext === "png") {
+      const frameImg = await pdfDoc.embedPng(frameBytes);
+      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+    } else {
+      const frameImg = await pdfDoc.embedJpg(frameBytes);
+      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+    }
   } else {
+    // usa la default
     const res = await fetch("assets/AAAcornice.png");
     frameBytes = await res.arrayBuffer();
+    const frameImg = await pdfDoc.embedPng(frameBytes);
+    page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
   }
-  const frameImg = await pdfDoc.embedPng(frameBytes);
-  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
   // Posizioni (2x2)
   const positions = [
@@ -101,13 +111,23 @@ async function imageToPDF(frameFile, imageFiles, filename) {
   // Cornice
   let frameBytes;
   if (frameFile) {
+    // usa la cornice caricata dall'utente
     frameBytes = await frameFile.arrayBuffer();
+    const ext = frameFile.name.split(".").pop().toLowerCase();
+    if (ext === "png") {
+      const frameImg = await pdfDoc.embedPng(frameBytes);
+      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+    } else {
+      const frameImg = await pdfDoc.embedJpg(frameBytes);
+      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+    }
   } else {
+    // usa la default
     const res = await fetch("assets/AAAcornice.png");
     frameBytes = await res.arrayBuffer();
+    const frameImg = await pdfDoc.embedPng(frameBytes);
+    page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
   }
-  const frameImg = await pdfDoc.embedPng(frameBytes);
-  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
   // Immagini
   for (let img of imageFiles) {
