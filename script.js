@@ -1,9 +1,9 @@
-// Gestione tab
-function openTab(tabName) {
+// Gestione tab (correzione: usa this invece di event.target)
+function openTab(tabName, el) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById(tabName).classList.add('active');
-  event.target.classList.add('active');
+  el.classList.add('active');
 }
 
 // Anteprima cornice caricata o default
@@ -103,4 +103,34 @@ async function imageToPDF(frameFile, imageFiles, filename) {
   if (frameFile) {
     frameBytes = await frameFile.arrayBuffer();
   } else {
-    const res = await fetch("assets/AA
+    const res = await fetch("assets/AAAcornice.png");
+    frameBytes = await res.arrayBuffer();
+  }
+  const frameImg = await pdfDoc.embedPng(frameBytes);
+  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+
+  // Immagini
+  for (let img of imageFiles) {
+    const bytes = await img.arrayBuffer();
+    const ext = img.name.split(".").pop().toLowerCase();
+    let embedded;
+    if (ext === "png") {
+      embedded = await pdfDoc.embedPng(bytes);
+    } else {
+      embedded = await pdfDoc.embedJpg(bytes);
+    }
+    page.drawImage(embedded, {
+      x: (9843 - 6890) / 2,
+      y: (13780 - 9843) / 2,
+      width: 6890,
+      height: 9843
+    });
+  }
+
+  const pdfBytes = await pdfDoc.save();
+  const blob = new Blob([pdfBytes], { type: "application/pdf" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
