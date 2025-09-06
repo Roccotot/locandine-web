@@ -6,61 +6,21 @@ function openTab(tabName) {
   event.target.classList.add('active');
 }
 
-// Carica immagine come base64
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
+// Anteprima cornice caricata o default
+function previewFrame(input, imgId) {
+  const preview = document.getElementById(imgId);
+  if (input.files && input.files[0]) {
     const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// Converti immagine base64 → PDF con pdf-lib
-async function imageToPDF(frameFile, imageFiles, filename) {
-  const { PDFDocument } = PDFLib;
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([9843, 13780]);
-
-  // Cornice
-  let frameBytes;
-  if (frameFile) {
-    frameBytes = await frameFile.arrayBuffer();
+    reader.onload = e => {
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
   } else {
-    const res = await fetch("assets/AAAcornice.png");
-    frameBytes = await res.arrayBuffer();
+    preview.src = "assets/AAAcornice.png";
   }
-  const frameImg = await pdfDoc.embedPng(frameBytes);
-  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-
-  // Immagini
-  for (let img of imageFiles) {
-    const bytes = await img.arrayBuffer();
-    const ext = img.name.split(".").pop().toLowerCase();
-    let embedded;
-    if (ext === "png") {
-      embedded = await pdfDoc.embedPng(bytes);
-    } else {
-      embedded = await pdfDoc.embedJpg(bytes);
-    }
-    // Ridimensiona e centra (per singola)
-    page.drawImage(embedded, {
-      x: (9843 - 6890) / 2,
-      y: (13780 - 9843) / 2,
-      width: 6890,
-      height: 9843
-    });
-  }
-
-  const pdfBytes = await pdfDoc.save();
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
 }
 
-// Singola
+// Singola locandina
 async function generateSingle() {
   const frameFile = document.getElementById("frameSingle").files[0];
   const images = [...document.getElementById("imagesSingle").files];
@@ -131,3 +91,16 @@ async function generateGrid() {
   link.download = "griglia4.pdf";
   link.click();
 }
+
+// Utility: immagine singola → PDF
+async function imageToPDF(frameFile, imageFiles, filename) {
+  const { PDFDocument } = PDFLib;
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([9843, 13780]);
+
+  // Cornice
+  let frameBytes;
+  if (frameFile) {
+    frameBytes = await frameFile.arrayBuffer();
+  } else {
+    const res = await fetch("assets/AA
