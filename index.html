@@ -5,20 +5,21 @@
   <title>Convertitore Locandine PDF - by Totaro Rocco</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
-</head>
-<body>
+
   <script>
     // 🔒 Protezione con password
-    const password = "puglia"; 
+    const password = "puglia";
     const input = prompt("Inserisci la password per accedere al sito:");
     if (input !== password) {
-      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>❌ Accesso negato</h1>";
+      document.write("<h1 style='color:red; text-align:center; margin-top:50px;'>❌ Accesso negato</h1>");
       throw new Error("Accesso negato");
     }
   </script>
 
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+</head>
+<body>
   <div class="container">
     <h1>Convertitore Locandine PDF<br><small>by Totaro Rocco</small></h1>
 
