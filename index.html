@@ -11,7 +11,19 @@
     const password = "puglia";
     const input = prompt("Inserisci la password per accedere al sito:");
     if (input !== password) {
-      document.write("<h1 style='color:red; text-align:center; margin-top:50px;'>❌ Accesso negato</h1>");
+      document.write(`
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            background: #f2f2f2; 
+            text-align: center; 
+            padding-top: 100px;
+          }
+          h1 { color: red; font-size: 2.5rem; }
+        </style>
+        <h1>❌ Accesso negato</h1>
+      `);
+      // blocca qui il caricamento del resto
       throw new Error("Accesso negato");
     }
   </script>
