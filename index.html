@@ -9,6 +9,16 @@
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body>
+  <script>
+    // 🔒 Protezione con password
+    const password = "puglia"; 
+    const input = prompt("Inserisci la password per accedere al sito:");
+    if (input !== password) {
+      document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>❌ Accesso negato</h1>";
+      throw new Error("Accesso negato");
+    }
+  </script>
+
   <div class="container">
     <h1>Convertitore Locandine PDF<br><small>by Totaro Rocco</small></h1>
 
@@ -45,6 +55,7 @@
       <img src="assets/fumetto.jpg" alt="Fumetto decorativo">
     </footer>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
