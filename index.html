@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Convertitore Locandine PDF - by Totaro Rocco</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
-  <!-- libreria pdf-lib per generare PDF -->
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
 <body>
@@ -19,7 +20,11 @@
     <!-- TAB SINGOLA -->
     <div id="single" class="tab-content active">
       <h2>Locandina Singola</h2>
-      <label>Cornice (PNG): <input type="file" id="frameSingle"></label><br>
+      <label>
+        Cornice (PNG):
+        <input type="file" id="frameSingle" onchange="previewFrame(this, 'previewFrameSingle')">
+        <img id="previewFrameSingle" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice">
+      </label><br>
       <label>Immagini: <input type="file" id="imagesSingle" multiple></label><br>
       <button onclick="generateSingle()">Crea PDF</button>
     </div>
@@ -27,7 +32,11 @@
     <!-- TAB GRIGLIA -->
     <div id="grid" class="tab-content">
       <h2>Locandina 4×4</h2>
-      <label>Cornice (PNG): <input type="file" id="frameGrid"></label><br>
+      <label>
+        Cornice (PNG):
+        <input type="file" id="frameGrid" onchange="previewFrame(this, 'previewFrameGrid')">
+        <img id="previewFrameGrid" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice">
+      </label><br>
       <label>Cartella Immagini (scegli più file): <input type="file" id="imagesGrid" multiple></label><br>
       <button onclick="generateGrid()">Crea PDF</button>
     </div>
