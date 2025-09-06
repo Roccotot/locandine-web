@@ -92,12 +92,11 @@ footer img {
 /* Miniatura cornice */
 .preview-frame {
   display: inline-block;
-  width: 100px;      /* larghezza fissa */
-  height: auto;
-  max-height: 100px; /* altezza massima */
+  width: 80px !important;   /* larghezza fissa */
+  height: 80px !important;  /* altezza fissa */
   margin-left: 15px;
   border: 1px solid #ccc;
-  object-fit: contain;
+  object-fit: contain;      /* mantiene proporzioni */
   vertical-align: middle;
 }
 
@@ -160,8 +159,8 @@ footer img {
   }
 
   .preview-frame {
-    width: 80px;   /* ancora più piccola su mobile */
-    max-height: 80px;
+    width: 60px !important;   /* ancora più piccola su mobile */
+    height: 60px !important;
   }
 
   footer img {
