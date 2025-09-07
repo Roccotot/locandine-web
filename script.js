@@ -1,4 +1,4 @@
-// Gestione tab (correzione: usa this invece di event.target)
+// Gestione tab
 function openTab(tabName, el) {
   document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -6,77 +6,54 @@ function openTab(tabName, el) {
   el.classList.add('active');
 }
 
-// Anteprima cornice caricata o default
-function previewFrame(input, imgId) {
-  const preview = document.getElementById(imgId);
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.src = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
-  } else {
-    preview.src = "assets/AAAcornice.png";
-  }
-}
-
 // Singola locandina
 async function generateSingle() {
-  const frameFile = document.getElementById("frameSingle").files[0];
   const images = [...document.getElementById("imagesSingle").files];
   if (images.length === 0) {
     alert("Carica almeno un'immagine!");
     return;
   }
   for (let img of images) {
-    await imageToPDF(frameFile, [img], img.name.replace(/\.[^/.]+$/, "") + ".pdf");
+    await imageToPDF([img], img.name.replace(/\.[^/.]+$/, "") + ".pdf");
   }
 }
 
-// Griglia 4×4
-async function generateGrid() {
-  const frameFile = document.getElementById("frameGrid").files[0];
-  let images = [...document.getElementById("imagesGrid").files];
-  if (images.length < 4) {
-    alert("Carica almeno 4 immagini!");
+// Genera griglia NxN
+async function generateGrid(n) {
+  const inputId = (n === 2 ? "imagesGrid2x2" : (n === 4 ? "imagesGrid4x4" : "imagesGrid5x5"));
+  let images = [...document.getElementById(inputId).files];
+  const needed = n * n;
+
+  if (images.length < needed) {
+    alert(`Carica almeno ${needed} immagini!`);
     return;
   }
-  images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 4);
+
+  images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, needed);
 
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([9843, 13780]);
 
-  // Cornice
-  let frameBytes;
-  if (frameFile) {
-    // usa la cornice caricata dall'utente
-    frameBytes = await frameFile.arrayBuffer();
-    const ext = frameFile.name.split(".").pop().toLowerCase();
-    if (ext === "png") {
-      const frameImg = await pdfDoc.embedPng(frameBytes);
-      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-    } else {
-      const frameImg = await pdfDoc.embedJpg(frameBytes);
-      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-    }
-  } else {
-    // usa la default
-    const res = await fetch("assets/AAAcornice.png");
-    frameBytes = await res.arrayBuffer();
-    const frameImg = await pdfDoc.embedPng(frameBytes);
-    page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-  }
+  // Cornice fissa da assets
+  const res = await fetch("assets/cornice.png");
+  const frameBytes = await res.arrayBuffer();
+  const frameImg = await pdfDoc.embedPng(frameBytes);
+  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Posizioni (2x2)
-  const positions = [
-    [ (9843-6890)/2, (13780-9843)/2 + 4920 ],
-    [ (9843-6890)/2 + 3450, (13780-9843)/2 + 4920 ],
-    [ (9843-6890)/2, (13780-9843)/2 ],
-    [ (9843-6890)/2 + 3450, (13780-9843)/2 ]
-  ];
+  // Area utile centrale (70x100 cm a 250 DPI)
+  const totalW = 6890;
+  const totalH = 9843;
+  const startX = (9843 - totalW) / 2;
+  const startY = (13780 - totalH) / 2;
 
-  for (let i=0; i<images.length; i++) {
+  const cellW = totalW / n;
+  const cellH = totalH / n;
+
+  for (let i = 0; i < images.length; i++) {
+    const row = Math.floor(i / n);
+    const col = i % n;
+
     const img = images[i];
     const bytes = await img.arrayBuffer();
     const ext = img.name.split(".").pop().toLowerCase();
@@ -86,11 +63,12 @@ async function generateGrid() {
     } else {
       embedded = await pdfDoc.embedJpg(bytes);
     }
+
     page.drawImage(embedded, {
-      x: positions[i][0],
-      y: positions[i][1],
-      width: 3400,
-      height: 4900
+      x: startX + col * cellW,
+      y: startY + (n - row - 1) * cellH, // inverti asse Y per il PDF
+      width: cellW,
+      height: cellH
     });
   }
 
@@ -98,38 +76,22 @@ async function generateGrid() {
   const blob = new Blob([pdfBytes], { type: "application/pdf" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "griglia4.pdf";
+  link.download = `griglia${n}x${n}.pdf`;
   link.click();
 }
 
-// Utility: immagine singola → PDF
-async function imageToPDF(frameFile, imageFiles, filename) {
+// Utility per singola immagine
+async function imageToPDF(imageFiles, filename) {
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([9843, 13780]);
 
-  // Cornice
-  let frameBytes;
-  if (frameFile) {
-    // usa la cornice caricata dall'utente
-    frameBytes = await frameFile.arrayBuffer();
-    const ext = frameFile.name.split(".").pop().toLowerCase();
-    if (ext === "png") {
-      const frameImg = await pdfDoc.embedPng(frameBytes);
-      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-    } else {
-      const frameImg = await pdfDoc.embedJpg(frameBytes);
-      page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-    }
-  } else {
-    // usa la default
-    const res = await fetch("assets/AAAcornice.png");
-    frameBytes = await res.arrayBuffer();
-    const frameImg = await pdfDoc.embedPng(frameBytes);
-    page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-  }
+  // Cornice fissa
+  const res = await fetch("assets/cornice.png");
+  const frameBytes = await res.arrayBuffer();
+  const frameImg = await pdfDoc.embedPng(frameBytes);
+  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Immagini
   for (let img of imageFiles) {
     const bytes = await img.arrayBuffer();
     const ext = img.name.split(".").pop().toLowerCase();
