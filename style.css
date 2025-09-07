@@ -1,66 +1,103 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f2f2f2;
+  background: #f4f4f4;
   margin: 0;
   padding: 0;
-  text-align: center;
 }
+
 .container {
   max-width: 900px;
   margin: auto;
-  padding: 40px 20px;
   background: white;
-  min-height: 100vh;
+  padding: 20px;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
-h1 { margin-top: 0; font-size: 2rem; }
-.tabs { margin: 30px 0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.logo-fumetto {
+  height: 60px;
+  width: auto;
+  border-radius: 6px;
+}
+
+.header h1 {
+  font-size: 1.8em;
+  margin: 0;
+  text-align: center;
+}
+
+.header small {
+  font-size: 0.6em;
+  color: #444;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
 .tab-btn {
-  padding: 12px 25px;
-  margin: 0 10px;
+  padding: 10px 16px;
   border: none;
+  border-radius: 6px;
+  background: #ccc;
   cursor: pointer;
-  background: #ddd;
-  border-radius: 5px;
-  font-size: 16px;
+  font-size: 1em;
+  font-weight: bold;
   transition: background 0.3s;
 }
-.tab-btn:hover { background: #bbb; }
-.tab-btn.active { background: #4CAF50; color: white; }
-.tab-content { display: none; margin-top: 30px; }
-.tab-content.active { display: block; }
-label { display: block; margin: 15px 0; font-size: 15px; }
-input[type="file"] { margin-left: 10px; }
-button {
-  padding: 12px 30px;
-  margin: 25px 10px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  font-size: 16px;
-  transition: background 0.3s;
+
+.tab-btn.active {
+  background: #28a745;
+  color: #fff;
 }
-/* PDF blu */
-.btn-pdf { background: #007bff; }
-.btn-pdf:hover { background: #0056b3; }
-/* JPG arancione */
-.btn-jpg { background: #ff9800; }
-.btn-jpg:hover { background: #e68900; }
+
+.tab-btn:hover {
+  background: #999;
+  color: #fff;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
 .preview-frame {
   display: inline-block;
-  width: 80px;
-  height: 80px;
-  margin-left: 15px;
-  border: 1px solid #ccc;
-  object-fit: contain;
   vertical-align: middle;
+  margin-left: 10px;
+  height: 50px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
-footer { margin-top: 50px; }
-footer img { max-width: 300px; opacity: 0.9; margin-top: 40px; }
-@media (max-width: 768px) {
-  .container { padding: 20px 10px; }
-  h1 { font-size: 1.8rem; }
-  .tab-btn { display: block; width: 100%; margin: 10px 0; }
-  button { width: 100%; font-size: 18px; margin: 20px 0; }
+
+button {
+  margin: 10px 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.btn-pdf {
+  background: #007bff;
+  color: white;
+}
+
+.btn-jpg {
+  background: orange;
+  color: white;
 }
