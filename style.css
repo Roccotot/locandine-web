@@ -98,11 +98,3 @@ footer img {
   opacity: 0.9;
   margin-top: 40px;
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-  .container { padding: 20px 10px; }
-  h1 { font-size: 1.8rem; }
-  .tab-btn { display: block; width: 100%; margin: 10px 0; }
-  button { width: 100%; font-size: 18px; margin: 20px 0; }
-}
