@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>PosterMatic Covert - by Totaro Rocco</title>
+  <title>Convertitore Locandine PDF/JPG - by Totaro Rocco</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="style.css" />
@@ -10,7 +10,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>PosterMatic Covert<br><small>by Totaro Rocco</small></h1>
+    <h1>Convertitore Locandine<br><small>by Totaro Rocco</small></h1>
 
     <div class="tabs">
       <button class="tab-btn active" onclick="openTab('single', this)">Singola</button>
@@ -29,7 +29,8 @@
         <img id="previewFrameSingle" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
       </label>
       <label>Immagini: <input type="file" id="imagesSingle" multiple accept="image/*" /></label><br />
-      <button onclick="generateSingle()">Crea PDF</button>
+      <button class="btn-pdf" onclick="generateSingle()">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateSingleJpg()">Crea JPG</button>
     </div>
 
     <!-- 2x2 -->
@@ -41,7 +42,8 @@
         <img id="previewFrameGrid2x2" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
       </label>
       <label>Immagini: <input type="file" id="imagesGrid2x2" multiple accept="image/*" /></label><br />
-      <button onclick="generateGrid(2)">Crea PDF</button>
+      <button class="btn-pdf" onclick="generateGrid(2)">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateGridJpg(2)">Crea JPG</button>
     </div>
 
     <!-- 3x3 -->
@@ -53,7 +55,8 @@
         <img id="previewFrameGrid3x3" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
       </label>
       <label>Immagini: <input type="file" id="imagesGrid3x3" multiple accept="image/*" /></label><br />
-      <button onclick="generateGrid(3)">Crea PDF</button>
+      <button class="btn-pdf" onclick="generateGrid(3)">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateGridJpg(3)">Crea JPG</button>
     </div>
 
     <!-- 4x4 -->
@@ -65,7 +68,8 @@
         <img id="previewFrameGrid4x4" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
       </label>
       <label>Immagini: <input type="file" id="imagesGrid4x4" multiple accept="image/*" /></label><br />
-      <button onclick="generateGrid(4)">Crea PDF</button>
+      <button class="btn-pdf" onclick="generateGrid(4)">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateGridJpg(4)">Crea JPG</button>
     </div>
 
     <!-- 5x5 -->
@@ -77,7 +81,8 @@
         <img id="previewFrameGrid5x5" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
       </label>
       <label>Immagini: <input type="file" id="imagesGrid5x5" multiple accept="image/*" /></label><br />
-      <button onclick="generateGrid(5)">Crea PDF</button>
+      <button class="btn-pdf" onclick="generateGrid(5)">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateGridJpg(5)">Crea JPG</button>
     </div>
 
     <footer>
@@ -88,4 +93,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
