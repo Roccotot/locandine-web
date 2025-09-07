@@ -5,7 +5,6 @@ body {
   padding: 0;
   text-align: center;
 }
-
 .container {
   max-width: 900px;
   margin: auto;
@@ -14,16 +13,8 @@ body {
   min-height: 100vh;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
-
-h1 {
-  margin-top: 0;
-  font-size: 2rem;
-}
-
-.tabs {
-  margin: 30px 0;
-}
-
+h1 { margin-top: 0; font-size: 2rem; }
+.tabs { margin: 30px 0; }
 .tab-btn {
   padding: 12px 25px;
   margin: 0 10px;
@@ -34,35 +25,12 @@ h1 {
   font-size: 16px;
   transition: background 0.3s;
 }
-
-.tab-btn:hover {
-  background: #bbb;
-}
-
-.tab-btn.active {
-  background: #4CAF50;
-  color: white;
-}
-
-.tab-content {
-  display: none;
-  margin-top: 30px;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-label {
-  display: block;
-  margin: 15px 0;
-  font-size: 15px;
-}
-
-input[type="file"] {
-  margin-left: 10px;
-}
-
+.tab-btn:hover { background: #bbb; }
+.tab-btn.active { background: #4CAF50; color: white; }
+.tab-content { display: none; margin-top: 30px; }
+.tab-content.active { display: block; }
+label { display: block; margin: 15px 0; font-size: 15px; }
+input[type="file"] { margin-left: 10px; }
 button {
   padding: 12px 30px;
   margin: 25px 10px;
@@ -73,23 +41,12 @@ button {
   font-size: 16px;
   transition: background 0.3s;
 }
-
 /* PDF blu */
-.btn-pdf {
-  background: #007bff;
-}
-.btn-pdf:hover {
-  background: #0056b3;
-}
-
+.btn-pdf { background: #007bff; }
+.btn-pdf:hover { background: #0056b3; }
 /* JPG arancione */
-.btn-jpg {
-  background: #ff9800;
-}
-.btn-jpg:hover {
-  background: #e68900;
-}
-
+.btn-jpg { background: #ff9800; }
+.btn-jpg:hover { background: #e68900; }
 .preview-frame {
   display: inline-block;
   width: 80px;
@@ -99,18 +56,8 @@ button {
   object-fit: contain;
   vertical-align: middle;
 }
-
-footer {
-  margin-top: 50px;
-}
-
-footer img {
-  max-width: 300px;
-  opacity: 0.9;
-  margin-top: 40px;
-}
-
-/* Responsive */
+footer { margin-top: 50px; }
+footer img { max-width: 300px; opacity: 0.9; margin-top: 40px; }
 @media (max-width: 768px) {
   .container { padding: 20px 10px; }
   h1 { font-size: 1.8rem; }
