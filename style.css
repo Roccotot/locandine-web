@@ -89,17 +89,6 @@ footer img {
   margin-top: 40px;
 }
 
-/* Miniatura cornice */
-.preview-frame {
-  display: inline-block;
-  width: 80px !important;
-  height: 80px !important;
-  margin-left: 15px;
-  border: 1px solid #ccc;
-  object-fit: contain;
-  vertical-align: middle;
-}
-
 /* -----------------------
    Responsive
 -------------------------*/
@@ -156,11 +145,6 @@ footer img {
   button {
     font-size: 20px;
     padding: 18px 30px;
-  }
-
-  .preview-frame {
-    width: 60px !important;
-    height: 60px !important;
   }
 
   footer img {
