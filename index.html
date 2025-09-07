@@ -19,6 +19,7 @@
       <button class="tab-btn" onclick="openTab('grid3x3', this)">9</button>
       <button class="tab-btn" onclick="openTab('grid4x3', this)">12</button>
       <button class="tab-btn" onclick="openTab('grid4x4', this)">16</button>
+      <button class="tab-btn" onclick="openTab('grid4x5', this)">20</button>
       <button class="tab-btn" onclick="openTab('grid5x5', this)">25</button>
     </div>
 
@@ -100,6 +101,19 @@
       <button class="btn-jpg" onclick="generateGridJpg(4,4)">Crea JPG</button>
     </div>
 
+    <!-- 4x5 -->
+    <div id="grid4x5" class="tab-content">
+      <h2>Locandina 4×5</h2>
+      <label>
+        Cornice:
+        <input type="file" id="frameGrid4x5" accept="image/*" onchange="previewFrame(this, 'previewFrameGrid4x5')" />
+        <img id="previewFrameGrid4x5" class="preview-frame" src="assets/AAAcornice.png" alt="Anteprima cornice" />
+      </label>
+      <label>Immagini: <input type="file" id="imagesGrid4x5" multiple accept="image/*" /></label><br />
+      <button class="btn-pdf" onclick="generateGrid(4,5)">Crea PDF</button>
+      <button class="btn-jpg" onclick="generateGridJpg(4,5)">Crea JPG</button>
+    </div>
+
     <!-- 5x5 -->
     <div id="grid5x5" class="tab-content">
       <h2>Locandina 5×5</h2>
@@ -121,4 +135,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
