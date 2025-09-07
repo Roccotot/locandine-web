@@ -48,23 +48,30 @@ async function getFrameImage(frameInputId) {
 
 // ----------------- Calcolo dimensioni -----------------
 function calculateCellSize(cols, rows) {
+  // GAP variabile per armonia
+  let GAP = 60;
+  if (cols === 2 && rows === 2) GAP = 80;
+  else if (cols === 3 && rows <= 3) GAP = 60;
+  else if (cols === 4) GAP = 50;
+  else if (cols === 5) GAP = 40;
+
   // Tentativo da larghezza
-  let cellW = AREA_W / cols;
+  let cellW = (AREA_W - (cols - 1) * GAP) / cols;
   let cellH = cellW / RATIO;
-  let totalH = cellH * rows;
+  let totalH = cellH * rows + (rows - 1) * GAP;
 
   if (totalH > AREA_H) {
     // Troppo alto, ricalcolo da altezza
-    cellH = AREA_H / rows;
+    cellH = (AREA_H - (rows - 1) * GAP) / rows;
     cellW = cellH * RATIO;
     totalH = AREA_H;
   }
 
-  const totalW = cellW * cols;
+  const totalW = cellW * cols + (cols - 1) * GAP;
   const offsetX = (AREA_W - totalW) / 2;
   const offsetY = (AREA_H - totalH) / 2;
 
-  return { cellW, cellH, offsetX, offsetY };
+  return { cellW, cellH, offsetX, offsetY, GAP };
 }
 
 // ----------------- PDF -----------------
@@ -84,15 +91,14 @@ async function imageToPDF(imageFiles, frameInputId, filename) {
   const frameImg = await pdfDoc.embedPng(frame);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  const cellW = AREA_W;
-  const cellH = AREA_H;
+  const w = AREA_W, h = AREA_H;
   const offsetX = (9843 - AREA_W) / 2;
   const offsetY = (13780 - AREA_H) / 2;
 
   for (let file of imageFiles) {
     const bytes = await file.arrayBuffer();
     const embedded = await pdfDoc.embedJpg(bytes);
-    page.drawImage(embedded, { x: offsetX, y: offsetY, width: cellW, height: cellH });
+    page.drawImage(embedded, { x: offsetX, y: offsetY, width: w, height: h });
   }
 
   const blob = new Blob([await pdfDoc.save()], { type: "application/pdf" });
@@ -117,15 +123,15 @@ async function generateGrid(cols, rows) {
   const frameImg = await pdfDoc.embedPng(frame);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  const { cellW, cellH, offsetX, offsetY } = calculateCellSize(cols, rows);
+  const { cellW, cellH, offsetX, offsetY, GAP } = calculateCellSize(cols, rows);
 
   for (let i = 0; i < images.length; i++) {
     const r = Math.floor(i / cols), c = i % cols;
     const bytes = await images[i].arrayBuffer();
     const embedded = await pdfDoc.embedJpg(bytes);
     page.drawImage(embedded, {
-      x: (9843 - AREA_W) / 2 + offsetX + c * cellW,
-      y: (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * cellH,
+      x: (9843 - AREA_W) / 2 + offsetX + c * (cellW + GAP),
+      y: (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * (cellH + GAP),
       width: cellW,
       height: cellH
     });
@@ -155,8 +161,7 @@ async function imageToJPG(imageFiles, frameInputId, filename) {
   const frameImg = await getFrameImage(frameInputId);
   ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-  const cellW = AREA_W;
-  const cellH = AREA_H;
+  const w = AREA_W, h = AREA_H;
   const offsetX = (9843 - AREA_W) / 2;
   const offsetY = (13780 - AREA_H) / 2;
 
@@ -165,7 +170,7 @@ async function imageToJPG(imageFiles, frameInputId, filename) {
     const img = new Image();
     img.src = url;
     await img.decode();
-    ctx.drawImage(img, offsetX, offsetY, cellW, cellH);
+    ctx.drawImage(img, offsetX, offsetY, w, h);
     URL.revokeObjectURL(url);
   }
 
@@ -190,7 +195,7 @@ async function generateGridJpg(cols, rows) {
   const frameImg = await getFrameImage(id.replace("images", "frame"));
   ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-  const { cellW, cellH, offsetX, offsetY } = calculateCellSize(cols, rows);
+  const { cellW, cellH, offsetX, offsetY, GAP } = calculateCellSize(cols, rows);
 
   for (let i = 0; i < images.length; i++) {
     const r = Math.floor(i / cols), c = i % cols;
@@ -200,8 +205,8 @@ async function generateGridJpg(cols, rows) {
     await img.decode();
     ctx.drawImage(
       img,
-      (9843 - AREA_W) / 2 + offsetX + c * cellW,
-      (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * cellH,
+      (9843 - AREA_W) / 2 + offsetX + c * (cellW + GAP),
+      (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * (cellH + GAP),
       cellW, cellH
     );
     URL.revokeObjectURL(url);
