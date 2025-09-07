@@ -1,33 +1,98 @@
+// Costanti
+const DEFAULT_FRAME_PATH = "assets/AAAcornice.png";
+
 // Gestione tab
 function openTab(tabName, el) {
-  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById(tabName).classList.add('active');
-  el.classList.add('active');
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(tabName).classList.add("active");
+  el.classList.add("active");
 }
+
+// Imposta le anteprime alla cornice di default all'avvio
+document.addEventListener("DOMContentLoaded", () => {
+  [
+    "previewFrameSingle",
+    "previewFrameGrid2x2",
+    "previewFrameGrid3x3",
+    "previewFrameGrid4x4",
+    "previewFrameGrid5x5"
+  ].forEach(id => {
+    const img = document.getElementById(id);
+    if (img) img.src = DEFAULT_FRAME_PATH;
+  });
+});
 
 // Anteprima cornice
 function previewFrame(input, imgId) {
   const preview = document.getElementById(imgId);
   if (input.files && input.files[0]) {
     const reader = new FileReader();
-    reader.onload = e => preview.src = e.target.result;
+    reader.onload = e => (preview.src = e.target.result);
     reader.readAsDataURL(input.files[0]);
   } else {
-    preview.src = "assets/cornice.png";
+    preview.src = DEFAULT_FRAME_PATH;
   }
 }
 
-// Recupera cornice (utente o default)
-async function getFrameBytes(frameInputId) {
-  const frameFile = document.getElementById(frameInputId)?.files[0];
-  if (frameFile) {
-    return { bytes: await frameFile.arrayBuffer(), ext: frameFile.name.split(".").pop().toLowerCase() };
-  } else {
-    const res = await fetch("assets/cornice.png");
-    return { bytes: await res.arrayBuffer(), ext: "png" };
+// ---- Utility conversione immagini ----
+
+// Converte qualsiasi file immagine in PNG bytes via canvas
+async function fileToPngBytes(file) {
+  // tenta createImageBitmap (più veloce)
+  try {
+    const bmp = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    canvas.width = bmp.width;
+    canvas.height = bmp.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bmp, 0, 0);
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    return await blob.arrayBuffer();
+  } catch {
+    // fallback con Image()
+    const url = URL.createObjectURL(file);
+    const img = await new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = url;
+    });
+    URL.revokeObjectURL(url);
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    return await blob.arrayBuffer();
   }
 }
+
+// Prepara un file per pdf-lib: restituisce {type:'png'|'jpg', bytes:ArrayBuffer}
+async function prepareFileForPdf(file) {
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  if (ext === "jpg" || ext === "jpeg") {
+    return { type: "jpg", bytes: await file.arrayBuffer() };
+  }
+  if (ext === "png") {
+    return { type: "png", bytes: await file.arrayBuffer() };
+  }
+  // altri formati (webp, gif, ecc.) -> converte a PNG
+  return { type: "png", bytes: await fileToPngBytes(file) };
+}
+
+// Recupera cornice (file scelto o default AAAcornice)
+async function getFrameForPdf(frameInputId) {
+  const file = document.getElementById(frameInputId)?.files?.[0];
+  if (file) return await prepareFileForPdf(file);
+  // default: AAAcornice.png
+  const resp = await fetch(DEFAULT_FRAME_PATH);
+  const bytes = await resp.arrayBuffer();
+  return { type: "png", bytes };
+}
+
+// ---- Generazione PDF ----
 
 // Singola
 async function generateSingle() {
@@ -41,13 +106,22 @@ async function generateSingle() {
   }
 }
 
-// Griglie NxN
+// Griglia NxN
 async function generateGrid(n) {
-  const inputId = `imagesGrid${n}x${n}`;
-  const frameId = `frameGrid${n}x${n}`;
+  const inputId =
+    n === 2 ? "imagesGrid2x2" :
+    n === 3 ? "imagesGrid3x3" :
+    n === 4 ? "imagesGrid4x4" :
+              "imagesGrid5x5";
+
+  const frameId =
+    n === 2 ? "frameGrid2x2" :
+    n === 3 ? "frameGrid3x3" :
+    n === 4 ? "frameGrid4x4" :
+              "frameGrid5x5";
+
   let images = [...document.getElementById(inputId).files];
   const needed = n * n;
-
   if (images.length < needed) {
     alert(`Carica almeno ${needed} immagini!`);
     return;
@@ -57,38 +131,35 @@ async function generateGrid(n) {
 
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([9843, 13780]);
+  pdfDoc.addPage([9843, 13780]); // una sola pagina
+  const page = pdfDoc.getPage(0);
 
-  // Cornice
-  const frame = await getFrameBytes(frameId);
-  let frameImg;
-  if (frame.ext === "png" || frame.ext === "webp" || frame.ext === "gif") {
-    frameImg = await pdfDoc.embedPng(frame.bytes);
-  } else {
-    frameImg = await pdfDoc.embedJpg(frame.bytes);
-  }
+  // Cornice (user o default)
+  const frame = await getFrameForPdf(frameId);
+  const frameImg = frame.type === "png"
+    ? await pdfDoc.embedPng(frame.bytes)
+    : await pdfDoc.embedJpg(frame.bytes);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Area utile
+  // Area utile centrale (70x100 cm @ 250 DPI)
   const totalW = 6890, totalH = 9843;
   const startX = (9843 - totalW) / 2;
   const startY = (13780 - totalH) / 2;
   const cellW = totalW / n, cellH = totalH / n;
 
+  // Inserisci immagini
   for (let i = 0; i < images.length; i++) {
-    const row = Math.floor(i / n), col = i % n;
-    const img = images[i];
-    const bytes = await img.arrayBuffer();
-    const ext = img.name.split(".").pop().toLowerCase();
-    let embedded;
-    if (ext === "png" || ext === "webp" || ext === "gif") {
-      embedded = await pdfDoc.embedPng(bytes);
-    } else {
-      embedded = await pdfDoc.embedJpg(bytes);
-    }
+    const row = Math.floor(i / n);
+    const col = i % n;
+
+    const prepared = await prepareFileForPdf(images[i]);
+    const embedded = prepared.type === "png"
+      ? await pdfDoc.embedPng(prepared.bytes)
+      : await pdfDoc.embedJpg(prepared.bytes);
+
     page.drawImage(embedded, {
       x: startX + col * cellW,
-      y: startY + (n - row - 1) * cellH,
+      y: startY + (n - row - 1) * cellH, // PDF ha origine in basso
       width: cellW,
       height: cellH
     });
@@ -102,36 +173,32 @@ async function generateGrid(n) {
   link.click();
 }
 
-// Utility singola immagine
+// Singola util
 async function imageToPDF(imageFiles, frameInputId, filename) {
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([9843, 13780]);
+  pdfDoc.addPage([9843, 13780]);
+  const page = pdfDoc.getPage(0);
 
-  const frame = await getFrameBytes(frameInputId);
-  let frameImg;
-  if (frame.ext === "png" || frame.ext === "webp" || frame.ext === "gif") {
-    frameImg = await pdfDoc.embedPng(frame.bytes);
-  } else {
-    frameImg = await pdfDoc.embedJpg(frame.bytes);
-  }
+  // Cornice (user o default)
+  const frame = await getFrameForPdf(frameInputId);
+  const frameImg = frame.type === "png"
+    ? await pdfDoc.embedPng(frame.bytes)
+    : await pdfDoc.embedJpg(frame.bytes);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  for (let img of imageFiles) {
-    const bytes = await img.arrayBuffer();
-    const ext = img.name.split(".").pop().toLowerCase();
-    let embedded;
-    if (ext === "png" || ext === "webp" || ext === "gif") {
-      embedded = await pdfDoc.embedPng(bytes);
-    } else {
-      embedded = await pdfDoc.embedJpg(bytes);
-    }
-    page.drawImage(embedded, {
-      x: (9843 - 6890) / 2,
-      y: (13780 - 9843) / 2,
-      width: 6890,
-      height: 9843
-    });
+  // Inserisci immagini (centro 70x100)
+  const w = 6890, h = 9843;
+  const x = (9843 - w) / 2;
+  const y = (13780 - h) / 2;
+
+  for (let file of imageFiles) {
+    const prepared = await prepareFileForPdf(file);
+    const embedded = prepared.type === "png"
+      ? await pdfDoc.embedPng(prepared.bytes)
+      : await pdfDoc.embedJpg(prepared.bytes);
+
+    page.drawImage(embedded, { x, y, width: w, height: h });
   }
 
   const pdfBytes = await pdfDoc.save();
