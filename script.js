@@ -89,7 +89,7 @@ async function getFrameForPdf(frameInputId) {
   return { type: "png", bytes };
 }
 
-// ---- Generazione PDF ----
+// ---- GENERAZIONE PDF ----
 
 // Singola
 async function generateSingle() {
@@ -103,7 +103,7 @@ async function generateSingle() {
   }
 }
 
-// Griglia NxN
+// Griglia NxN in PDF
 async function generateGrid(n) {
   const inputId =
     n === 2 ? "imagesGrid2x2" :
@@ -153,7 +153,6 @@ async function generateGrid(n) {
   const cellW = (totalW - (n - 1) * SPACING) / n;
   const cellH = (totalH - (n - 1) * SPACING) / n;
 
-  // Inserisci immagini con spaziatura
   for (let i = 0; i < images.length; i++) {
     const row = Math.floor(i / n);
     const col = i % n;
@@ -179,21 +178,19 @@ async function generateGrid(n) {
   link.click();
 }
 
-// Singola util
+// Utility singola PDF
 async function imageToPDF(imageFiles, frameInputId, filename) {
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
   pdfDoc.addPage([9843, 13780]);
   const page = pdfDoc.getPage(0);
 
-  // Cornice (user o default)
   const frame = await getFrameForPdf(frameInputId);
   const frameImg = frame.type === "png"
     ? await pdfDoc.embedPng(frame.bytes)
     : await pdfDoc.embedJpg(frame.bytes);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Inserisci immagini (centro 70x100)
   const w = 6890, h = 9843;
   const x = (9843 - w) / 2;
   const y = (13780 - h) / 2;
@@ -211,6 +208,124 @@ async function imageToPDF(imageFiles, frameInputId, filename) {
   const blob = new Blob([pdfBytes], { type: "application/pdf" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+// ---- GENERAZIONE JPG ----
+
+// Singola
+async function generateSingleJpg() {
+  const images = [...document.getElementById("imagesSingle").files];
+  if (images.length === 0) {
+    alert("Carica almeno un'immagine!");
+    return;
+  }
+  for (let img of images) {
+    await imageToJPG([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".jpg");
+  }
+}
+
+// Griglia NxN in JPG
+async function generateGridJpg(n) {
+  const inputId =
+    n === 2 ? "imagesGrid2x2" :
+    n === 3 ? "imagesGrid3x3" :
+    n === 4 ? "imagesGrid4x4" :
+              "imagesGrid5x5";
+
+  const frameId =
+    n === 2 ? "frameGrid2x2" :
+    n === 3 ? "frameGrid3x3" :
+    n === 4 ? "frameGrid4x4" :
+              "frameGrid5x5";
+
+  let images = [...document.getElementById(inputId).files];
+  const needed = n * n;
+  if (images.length < needed) {
+    alert(`Carica almeno ${needed} immagini!`);
+    return;
+  }
+
+  images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, needed);
+  await gridToJPG(images, frameId, n, `griglia${n}x${n}.jpg`);
+}
+
+// Utility singola JPG
+async function imageToJPG(imageFiles, frameInputId, filename) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 9843;
+  canvas.height = 13780;
+  const ctx = canvas.getContext("2d");
+
+  // Cornice
+  const frameFile = document.getElementById(frameInputId)?.files[0];
+  const frameImg = new Image();
+  frameImg.src = frameFile ? URL.createObjectURL(frameFile) : DEFAULT_FRAME_PATH;
+  await frameImg.decode();
+  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  if (frameFile) URL.revokeObjectURL(frameImg.src);
+
+  const w = 6890, h = 9843;
+  const x = (9843 - w) / 2;
+  const y = (13780 - h) / 2;
+
+  for (let file of imageFiles) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    ctx.drawImage(img, x, y, w, h);
+    URL.revokeObjectURL(url);
+  }
+
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/jpeg", 0.9);
+  link.download = filename;
+  link.click();
+}
+
+// Utility griglia JPG
+async function gridToJPG(images, frameInputId, n, filename) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 9843;
+  canvas.height = 13780;
+  const ctx = canvas.getContext("2d");
+
+  // Cornice
+  const frameFile = document.getElementById(frameInputId)?.files[0];
+  const frameImg = new Image();
+  frameImg.src = frameFile ? URL.createObjectURL(frameFile) : DEFAULT_FRAME_PATH;
+  await frameImg.decode();
+  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  if (frameFile) URL.revokeObjectURL(frameImg.src);
+
+  const totalW = 6890, totalH = 9843;
+  const startX = (9843 - totalW) / 2;
+  const startY = (13780 - totalH) / 2;
+
+  let SPACING;
+  if (n === 2) SPACING = 150;
+  else if (n === 3) SPACING = 100;
+  else if (n === 4) SPACING = 70;
+  else if (n === 5) SPACING = 40;
+
+  const cellW = (totalW - (n - 1) * SPACING) / n;
+  const cellH = (totalH - (n - 1) * SPACING) / n;
+
+  for (let i = 0; i < images.length; i++) {
+    const row = Math.floor(i / n);
+    const col = i % n;
+    const url = URL.createObjectURL(images[i]);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    ctx.drawImage(img, startX + col * (cellW + SPACING), startY + (n - row - 1) * (cellH + SPACING), cellW, cellH);
+    URL.revokeObjectURL(url);
+  }
+
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/jpeg", 0.9);
   link.download = filename;
   link.click();
 }
