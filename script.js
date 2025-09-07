@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   [
     "previewFrameSingle",
     "previewFrameGrid2x2",
+    "previewFrameGrid3x2",
     "previewFrameGrid3x3",
     "previewFrameGrid4x3",
     "previewFrameGrid4x4",
@@ -82,9 +83,17 @@ async function generateGrid(cols,rows) {
   const frameImg=await pdfDoc.embedPng(frame);
   page.drawImage(frameImg,{x:0,y:0,width:9843,height:13780});
 
-  const totalW=6890,totalH=9843;
+  // Area utile
+  let totalW=6890,totalH=9843;
+  if(cols===3 && rows===2){ totalH=6890; } // speciale 3x2
   const startX=(9843-totalW)/2,startY=(13780-totalH)/2;
-  let SPACING=80;if(cols===2&&rows===2)SPACING=150;else if(cols===3&&rows===3)SPACING=100;else if(cols===4&&rows===4)SPACING=70;else if(cols===5&&rows===5)SPACING=40;
+
+  let SPACING=80;
+  if(cols===2&&rows===2)SPACING=150;
+  else if(cols===3&&rows===3)SPACING=100;
+  else if(cols===4&&rows===4)SPACING=70;
+  else if(cols===5&&rows===5)SPACING=40;
+
   const cellW=(totalW-(cols-1)*SPACING)/cols,cellH=(totalH-(rows-1)*SPACING)/rows;
 
   for(let i=0;i<images.length;i++){
@@ -121,8 +130,16 @@ async function generateGridJpg(cols,rows) {
   const canvas=document.createElement("canvas");canvas.width=9843;canvas.height=13780;const ctx=canvas.getContext("2d");
   const frameImg=await getFrameImage(frameId);ctx.drawImage(frameImg,0,0,canvas.width,canvas.height);
 
-  const totalW=6890,totalH=9843,startX=(9843-totalW)/2,startY=(13780-totalH)/2;
-  let SPACING=80;if(cols===2&&rows===2)SPACING=150;else if(cols===3&&rows===3)SPACING=100;else if(cols===4&&rows===4)SPACING=70;else if(cols===5&&rows===5)SPACING=40;
+  let totalW=6890,totalH=9843;
+  if(cols===3 && rows===2){ totalH=6890; } // speciale 3x2
+  const startX=(9843-totalW)/2,startY=(13780-totalH)/2;
+
+  let SPACING=80;
+  if(cols===2&&rows===2)SPACING=150;
+  else if(cols===3&&rows===3)SPACING=100;
+  else if(cols===4&&rows===4)SPACING=70;
+  else if(cols===5&&rows===5)SPACING=40;
+
   const cellW=(totalW-(cols-1)*SPACING)/cols,cellH=(totalH-(rows-1)*SPACING)/rows;
 
   for(let i=0;i<images.length;i++){const r=Math.floor(i/cols),c=i%cols;const url=URL.createObjectURL(images[i]);const img=new Image();img.src=url;await img.decode();ctx.drawImage(img,startX+c*(cellW+SPACING),startY+(rows-r-1)*(cellH+SPACING),cellW,cellH);URL.revokeObjectURL(url);}
