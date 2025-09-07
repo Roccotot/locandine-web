@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>PosterMatic Convert - by Totaro Rocco</title>
+  <title>Convertitore Locandine PDF/JPG - by Totaro Rocco</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="style.css" />
@@ -10,8 +10,13 @@
 </head>
 <body>
   <div class="container">
-    <h1>PosterMatic Convert<br><small>by Totaro Rocco</small></h1>
+    <!-- intestazione -->
+    <header class="header">
+      <img src="assets/fumetto.jpg" alt="Fumetto logo" class="logo-fumetto" />
+      <h1>Convertitore Locandine<br><small>by Totaro Rocco</small></h1>
+    </header>
 
+    <!-- pulsanti numerici -->
     <div class="tabs">
       <button class="tab-btn active" onclick="openTab('single', this)">1</button>
       <button class="tab-btn" onclick="openTab('grid2x2', this)">4</button>
@@ -23,7 +28,7 @@
       <button class="tab-btn" onclick="openTab('grid5x5', this)">25</button>
     </div>
 
-    <!-- SINGOLA -->
+    <!-- singola -->
     <div id="single" class="tab-content active">
       <h2>Locandina Singola</h2>
       <label>
@@ -36,7 +41,7 @@
       <button class="btn-jpg" onclick="generateSingleJpg()">Crea JPG</button>
     </div>
 
-    <!-- 2x2 -->
+    <!-- griglie -->
     <div id="grid2x2" class="tab-content">
       <h2>Locandina 2×2</h2>
       <label>
@@ -49,7 +54,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(2,2)">Crea JPG</button>
     </div>
 
-    <!-- 3x2 -->
     <div id="grid3x2" class="tab-content">
       <h2>Locandina 3×2</h2>
       <label>
@@ -62,7 +66,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(3,2)">Crea JPG</button>
     </div>
 
-    <!-- 3x3 -->
     <div id="grid3x3" class="tab-content">
       <h2>Locandina 3×3</h2>
       <label>
@@ -75,7 +78,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(3,3)">Crea JPG</button>
     </div>
 
-    <!-- 4x3 -->
     <div id="grid4x3" class="tab-content">
       <h2>Locandina 4×3</h2>
       <label>
@@ -88,7 +90,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(4,3)">Crea JPG</button>
     </div>
 
-    <!-- 4x4 -->
     <div id="grid4x4" class="tab-content">
       <h2>Locandina 4×4</h2>
       <label>
@@ -101,7 +102,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(4,4)">Crea JPG</button>
     </div>
 
-    <!-- 4x5 -->
     <div id="grid4x5" class="tab-content">
       <h2>Locandina 4×5</h2>
       <label>
@@ -114,7 +114,6 @@
       <button class="btn-jpg" onclick="generateGridJpg(4,5)">Crea JPG</button>
     </div>
 
-    <!-- 5x5 -->
     <div id="grid5x5" class="tab-content">
       <h2>Locandina 5×5</h2>
       <label>
@@ -126,13 +125,8 @@
       <button class="btn-pdf" onclick="generateGrid(5,5)">Crea PDF</button>
       <button class="btn-jpg" onclick="generateGridJpg(5,5)">Crea JPG</button>
     </div>
-
-    <footer>
-      <img src="assets/fumetto.jpg" alt="Fumetto decorativo" />
-    </footer>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
-
