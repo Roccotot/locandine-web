@@ -1,5 +1,9 @@
 const DEFAULT_FRAME_PATH = "assets/AAAcornice.png";
+const AREA_W = 6890; // 70 cm
+const AREA_H = 9843; // 100 cm
+const RATIO = 34 / 50; // proporzione locandina (larghezza/altezza)
 
+// ----------------- Utility -----------------
 function openTab(tabName, el) {
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -42,11 +46,33 @@ async function getFrameImage(frameInputId) {
   return frameImg;
 }
 
+// ----------------- Calcolo dimensioni -----------------
+function calculateCellSize(cols, rows) {
+  // Tentativo da larghezza
+  let cellW = AREA_W / cols;
+  let cellH = cellW / RATIO;
+  let totalH = cellH * rows;
+
+  if (totalH > AREA_H) {
+    // Troppo alto, ricalcolo da altezza
+    cellH = AREA_H / rows;
+    cellW = cellH * RATIO;
+    totalH = AREA_H;
+  }
+
+  const totalW = cellW * cols;
+  const offsetX = (AREA_W - totalW) / 2;
+  const offsetY = (AREA_H - totalH) / 2;
+
+  return { cellW, cellH, offsetX, offsetY };
+}
+
 // ----------------- PDF -----------------
 async function generateSingle() {
   const images = [...document.getElementById("imagesSingle").files];
   if (!images.length) return alert("Carica almeno un'immagine!");
-  for (let img of images) await imageToPDF([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".pdf");
+  for (let img of images)
+    await imageToPDF([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".pdf");
 }
 
 async function imageToPDF(imageFiles, frameInputId, filename) {
@@ -58,13 +84,15 @@ async function imageToPDF(imageFiles, frameInputId, filename) {
   const frameImg = await pdfDoc.embedPng(frame);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Area utile sempre verticale 70x100 cm
-  const w = 6890, h = 9843, x = (9843 - w) / 2, y = (13780 - h) / 2;
+  const cellW = AREA_W;
+  const cellH = AREA_H;
+  const offsetX = (9843 - AREA_W) / 2;
+  const offsetY = (13780 - AREA_H) / 2;
 
   for (let file of imageFiles) {
     const bytes = await file.arrayBuffer();
     const embedded = await pdfDoc.embedJpg(bytes);
-    page.drawImage(embedded, { x, y, width: w, height: h });
+    page.drawImage(embedded, { x: offsetX, y: offsetY, width: cellW, height: cellH });
   }
 
   const blob = new Blob([await pdfDoc.save()], { type: "application/pdf" });
@@ -76,9 +104,9 @@ async function imageToPDF(imageFiles, frameInputId, filename) {
 
 async function generateGrid(cols, rows) {
   const id = `imagesGrid${cols}x${rows}`;
-  const frameId = `frameGrid${cols}x${rows}`;
   let images = [...document.getElementById(id).files];
-  if (images.length < cols * rows) return alert(`Carica almeno ${cols * rows} immagini!`);
+  if (images.length < cols * rows)
+    return alert(`Carica almeno ${cols * rows} immagini!`);
   images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, cols * rows);
 
   const { PDFDocument } = PDFLib;
@@ -89,27 +117,15 @@ async function generateGrid(cols, rows) {
   const frameImg = await pdfDoc.embedPng(frame);
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
-  // Area utile sempre verticale 70x100 cm
-  const totalW = 6890, totalH = 9843;
-  const startX = (9843 - totalW) / 2, startY = (13780 - totalH) / 2;
-
-  // Spaziature diverse per armonia
-  let SPACING = 80;
-  if (cols === 2 && rows === 2) SPACING = 150;
-  else if (cols === 3 && rows === 3) SPACING = 120;
-  else if (cols === 4 && rows === 4) SPACING = 90;
-  else if (cols === 5 && rows === 5) SPACING = 70;
-
-  const cellW = (totalW - (cols - 1) * SPACING) / cols;
-  const cellH = (totalH - (rows - 1) * SPACING) / rows;
+  const { cellW, cellH, offsetX, offsetY } = calculateCellSize(cols, rows);
 
   for (let i = 0; i < images.length; i++) {
     const r = Math.floor(i / cols), c = i % cols;
     const bytes = await images[i].arrayBuffer();
     const embedded = await pdfDoc.embedJpg(bytes);
     page.drawImage(embedded, {
-      x: startX + c * (cellW + SPACING),
-      y: startY + (rows - r - 1) * (cellH + SPACING),
+      x: (9843 - AREA_W) / 2 + offsetX + c * cellW,
+      y: (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * cellH,
       width: cellW,
       height: cellH
     });
@@ -126,7 +142,8 @@ async function generateGrid(cols, rows) {
 async function generateSingleJpg() {
   const images = [...document.getElementById("imagesSingle").files];
   if (!images.length) return alert("Carica almeno un'immagine!");
-  for (let img of images) await imageToJPG([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".jpg");
+  for (let img of images)
+    await imageToJPG([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".jpg");
 }
 
 async function imageToJPG(imageFiles, frameInputId, filename) {
@@ -138,14 +155,17 @@ async function imageToJPG(imageFiles, frameInputId, filename) {
   const frameImg = await getFrameImage(frameInputId);
   ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-  const w = 6890, h = 9843, x = (9843 - w) / 2, y = (13780 - h) / 2;
+  const cellW = AREA_W;
+  const cellH = AREA_H;
+  const offsetX = (9843 - AREA_W) / 2;
+  const offsetY = (13780 - AREA_H) / 2;
 
   for (let file of imageFiles) {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.src = url;
     await img.decode();
-    ctx.drawImage(img, x, y, w, h);
+    ctx.drawImage(img, offsetX, offsetY, cellW, cellH);
     URL.revokeObjectURL(url);
   }
 
@@ -156,9 +176,10 @@ async function imageToJPG(imageFiles, frameInputId, filename) {
 }
 
 async function generateGridJpg(cols, rows) {
-  const id = `imagesGrid${cols}x${rows}`, frameId = `frameGrid${cols}x${rows}`;
+  const id = `imagesGrid${cols}x${rows}`;
   let images = [...document.getElementById(id).files];
-  if (images.length < cols * rows) return alert(`Carica almeno ${cols * rows} immagini!`);
+  if (images.length < cols * rows)
+    return alert(`Carica almeno ${cols * rows} immagini!`);
   images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, cols * rows);
 
   const canvas = document.createElement("canvas");
@@ -166,21 +187,10 @@ async function generateGridJpg(cols, rows) {
   canvas.height = 13780;
   const ctx = canvas.getContext("2d");
 
-  const frameImg = await getFrameImage(frameId);
+  const frameImg = await getFrameImage(id.replace("images", "frame"));
   ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
 
-  // Area utile sempre verticale 70x100 cm
-  const totalW = 6890, totalH = 9843;
-  const startX = (9843 - totalW) / 2, startY = (13780 - totalH) / 2;
-
-  let SPACING = 80;
-  if (cols === 2 && rows === 2) SPACING = 150;
-  else if (cols === 3 && rows === 3) SPACING = 120;
-  else if (cols === 4 && rows === 4) SPACING = 90;
-  else if (cols === 5 && rows === 5) SPACING = 70;
-
-  const cellW = (totalW - (cols - 1) * SPACING) / cols;
-  const cellH = (totalH - (rows - 1) * SPACING) / rows;
+  const { cellW, cellH, offsetX, offsetY } = calculateCellSize(cols, rows);
 
   for (let i = 0; i < images.length; i++) {
     const r = Math.floor(i / cols), c = i % cols;
@@ -188,9 +198,10 @@ async function generateGridJpg(cols, rows) {
     const img = new Image();
     img.src = url;
     await img.decode();
-    ctx.drawImage(img,
-      startX + c * (cellW + SPACING),
-      startY + (rows - r - 1) * (cellH + SPACING),
+    ctx.drawImage(
+      img,
+      (9843 - AREA_W) / 2 + offsetX + c * cellW,
+      (13780 - AREA_H) / 2 + offsetY + (rows - r - 1) * cellH,
       cellW, cellH
     );
     URL.revokeObjectURL(url);
