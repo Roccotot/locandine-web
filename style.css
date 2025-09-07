@@ -79,6 +79,16 @@ button:hover {
   background: #45a049;
 }
 
+.preview-frame {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  margin-left: 15px;
+  border: 1px solid #ccc;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
 footer {
   margin-top: 50px;
 }
@@ -89,65 +99,10 @@ footer img {
   margin-top: 40px;
 }
 
-/* -----------------------
-   Responsive
--------------------------*/
+/* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding: 20px 10px;
-  }
-
-  h1 {
-    font-size: 1.8rem;
-  }
-
-  .tab-btn {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-  }
-
-  label {
-    font-size: 16px;
-  }
-
-  input[type="file"] {
-    display: block;
-    margin: 10px auto;
-  }
-
-  button {
-    width: 100%;
-    font-size: 18px;
-    margin: 20px 0;
-  }
-
-  footer img {
-    max-width: 250px;
-    margin-top: 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  h1 {
-    font-size: 2.4rem;
-  }
-
-  .tab-btn {
-    font-size: 20px;
-    padding: 18px 30px;
-  }
-
-  label {
-    font-size: 18px;
-  }
-
-  button {
-    font-size: 20px;
-    padding: 18px 30px;
-  }
-
-  footer img {
-    max-width: 320px;
-  }
+  .container { padding: 20px 10px; }
+  h1 { font-size: 1.8rem; }
+  .tab-btn { display: block; width: 100%; margin: 10px 0; }
+  button { width: 100%; font-size: 18px; margin: 20px 0; }
 }
