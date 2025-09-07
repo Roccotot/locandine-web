@@ -85,7 +85,9 @@ async function generateGrid(cols,rows) {
 
   // Area utile
   let totalW=6890,totalH=9843;
-  if(cols===3 && rows===2){ totalH=6890; } // speciale 3x2
+  if ((cols===3&&rows===2) || (cols===3&&rows===3) || (cols===4&&rows===3) || (cols===4&&rows===4) || (cols===5&&rows===5)) {
+    totalH=6890;
+  }
   const startX=(9843-totalW)/2,startY=(13780-totalH)/2;
 
   let SPACING=80;
@@ -131,7 +133,9 @@ async function generateGridJpg(cols,rows) {
   const frameImg=await getFrameImage(frameId);ctx.drawImage(frameImg,0,0,canvas.width,canvas.height);
 
   let totalW=6890,totalH=9843;
-  if(cols===3 && rows===2){ totalH=6890; } // speciale 3x2
+  if ((cols===3&&rows===2) || (cols===3&&rows===3) || (cols===4&&rows===3) || (cols===4&&rows===4) || (cols===5&&rows===5)) {
+    totalH=6890;
+  }
   const startX=(9843-totalW)/2,startY=(13780-totalH)/2;
 
   let SPACING=80;
