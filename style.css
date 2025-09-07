@@ -65,18 +65,29 @@ input[type="file"] {
 
 button {
   padding: 12px 30px;
-  margin: 25px 0;
+  margin: 25px 10px;
   cursor: pointer;
   border: none;
   border-radius: 5px;
-  background: #4CAF50;
   color: white;
   font-size: 16px;
   transition: background 0.3s;
 }
 
-button:hover {
-  background: #45a049;
+/* PDF blu */
+.btn-pdf {
+  background: #007bff;
+}
+.btn-pdf:hover {
+  background: #0056b3;
+}
+
+/* JPG arancione */
+.btn-jpg {
+  background: #ff9800;
+}
+.btn-jpg:hover {
+  background: #e68900;
 }
 
 .preview-frame {
@@ -97,4 +108,12 @@ footer img {
   max-width: 300px;
   opacity: 0.9;
   margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 20px 10px; }
+  h1 { font-size: 1.8rem; }
+  .tab-btn { display: block; width: 100%; margin: 10px 0; }
+  button { width: 100%; font-size: 18px; margin: 20px 0; }
 }
