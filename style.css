@@ -21,10 +21,17 @@ body {
 }
 
 .logo-fumetto {
-  height: 60px;
+  height: 2.2em;   /* proporzionato al titolo */
   width: auto;
   border-radius: 6px;
 }
+
+@media (max-width: 600px) {
+  .logo-fumetto {
+    height: 35px;  /* più piccolo su smartphone */
+  }
+}
+
 
 .header h1 {
   font-size: 1.8em;
@@ -101,3 +108,4 @@ button {
   background: orange;
   color: white;
 }
+
