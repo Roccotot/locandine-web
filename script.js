@@ -39,7 +39,6 @@ function previewFrame(input, imgId) {
 
 // Converte qualsiasi file immagine in PNG bytes via canvas
 async function fileToPngBytes(file) {
-  // tenta createImageBitmap (più veloce)
   try {
     const bmp = await createImageBitmap(file);
     const canvas = document.createElement("canvas");
@@ -50,7 +49,6 @@ async function fileToPngBytes(file) {
     const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
     return await blob.arrayBuffer();
   } catch {
-    // fallback con Image()
     const url = URL.createObjectURL(file);
     const img = await new Promise((resolve, reject) => {
       const im = new Image();
@@ -86,7 +84,6 @@ async function prepareFileForPdf(file) {
 async function getFrameForPdf(frameInputId) {
   const file = document.getElementById(frameInputId)?.files?.[0];
   if (file) return await prepareFileForPdf(file);
-  // default: AAAcornice.png
   const resp = await fetch(DEFAULT_FRAME_PATH);
   const bytes = await resp.arrayBuffer();
   return { type: "png", bytes };
@@ -131,7 +128,7 @@ async function generateGrid(n) {
 
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.addPage([9843, 13780]); // una sola pagina
+  pdfDoc.addPage([9843, 13780]);
   const page = pdfDoc.getPage(0);
 
   // Cornice (user o default)
@@ -145,9 +142,18 @@ async function generateGrid(n) {
   const totalW = 6890, totalH = 9843;
   const startX = (9843 - totalW) / 2;
   const startY = (13780 - totalH) / 2;
-  const cellW = totalW / n, cellH = totalH / n;
 
-  // Inserisci immagini
+  // Spaziatura armonica
+  let SPACING;
+  if (n === 2) SPACING = 150;
+  else if (n === 3) SPACING = 100;
+  else if (n === 4) SPACING = 70;
+  else if (n === 5) SPACING = 40;
+
+  const cellW = (totalW - (n - 1) * SPACING) / n;
+  const cellH = (totalH - (n - 1) * SPACING) / n;
+
+  // Inserisci immagini con spaziatura
   for (let i = 0; i < images.length; i++) {
     const row = Math.floor(i / n);
     const col = i % n;
@@ -158,8 +164,8 @@ async function generateGrid(n) {
       : await pdfDoc.embedJpg(prepared.bytes);
 
     page.drawImage(embedded, {
-      x: startX + col * cellW,
-      y: startY + (n - row - 1) * cellH, // PDF ha origine in basso
+      x: startX + col * (cellW + SPACING),
+      y: startY + (n - row - 1) * (cellH + SPACING),
       width: cellW,
       height: cellH
     });
