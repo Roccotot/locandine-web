@@ -32,7 +32,6 @@ body {
   }
 }
 
-
 .header h1 {
   font-size: 1.8em;
   margin: 0;
@@ -44,6 +43,7 @@ body {
   color: #444;
 }
 
+/* Pulsanti numerici */
 .tabs {
   display: flex;
   justify-content: center;
@@ -73,6 +73,7 @@ body {
   color: #fff;
 }
 
+/* Contenuti */
 .tab-content {
   display: none;
 }
@@ -81,15 +82,27 @@ body {
   display: block;
 }
 
+/* Input file */
+label {
+  display: block;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+label input[type="file"] {
+  margin-left: 10px;
+}
+
 .preview-frame {
   display: inline-block;
   vertical-align: middle;
-  margin-left: 10px;
+  margin-left: 15px;
   height: 50px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
+/* Pulsanti azione */
 button {
   margin: 10px 5px;
   padding: 10px 20px;
@@ -108,4 +121,3 @@ button {
   background: orange;
   color: white;
 }
-
