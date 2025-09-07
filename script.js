@@ -1,7 +1,5 @@
-// Costanti
 const DEFAULT_FRAME_PATH = "assets/AAAcornice.png";
 
-// Gestione tab
 function openTab(tabName, el) {
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -9,12 +7,12 @@ function openTab(tabName, el) {
   el.classList.add("active");
 }
 
-// Imposta le anteprime alla cornice di default all'avvio
 document.addEventListener("DOMContentLoaded", () => {
   [
     "previewFrameSingle",
     "previewFrameGrid2x2",
     "previewFrameGrid3x3",
+    "previewFrameGrid4x3",
     "previewFrameGrid4x4",
     "previewFrameGrid5x5"
   ].forEach(id => {
@@ -23,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Anteprima cornice
 function previewFrame(input, imgId) {
   const preview = document.getElementById(imgId);
   if (input.files && input.files[0]) {
@@ -35,297 +32,99 @@ function previewFrame(input, imgId) {
   }
 }
 
-// ---- Utility conversione immagini ----
-
-// Converte qualsiasi file immagine in PNG bytes via canvas
-async function fileToPngBytes(file) {
-  try {
-    const bmp = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    canvas.width = bmp.width;
-    canvas.height = bmp.height;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(bmp, 0, 0);
-    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
-    return await blob.arrayBuffer();
-  } catch {
-    const url = URL.createObjectURL(file);
-    const img = await new Promise((resolve, reject) => {
-      const im = new Image();
-      im.onload = () => resolve(im);
-      im.onerror = reject;
-      im.src = url;
-    });
-    URL.revokeObjectURL(url);
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
-    return await blob.arrayBuffer();
-  }
+async function getFrameImage(frameInputId) {
+  const frameFile = document.getElementById(frameInputId)?.files[0];
+  const frameImg = new Image();
+  frameImg.src = frameFile ? URL.createObjectURL(frameFile) : DEFAULT_FRAME_PATH;
+  await frameImg.decode();
+  if (frameFile) URL.revokeObjectURL(frameImg.src);
+  return frameImg;
 }
 
-// Prepara un file per pdf-lib: restituisce {type:'png'|'jpg', bytes:ArrayBuffer}
-async function prepareFileForPdf(file) {
-  const ext = (file.name.split(".").pop() || "").toLowerCase();
-  if (ext === "jpg" || ext === "jpeg") {
-    return { type: "jpg", bytes: await file.arrayBuffer() };
-  }
-  if (ext === "png") {
-    return { type: "png", bytes: await file.arrayBuffer() };
-  }
-  // altri formati (webp, gif, ecc.) -> converte a PNG
-  return { type: "png", bytes: await fileToPngBytes(file) };
-}
-
-// Recupera cornice (file scelto o default AAAcornice)
-async function getFrameForPdf(frameInputId) {
-  const file = document.getElementById(frameInputId)?.files?.[0];
-  if (file) return await prepareFileForPdf(file);
-  const resp = await fetch(DEFAULT_FRAME_PATH);
-  const bytes = await resp.arrayBuffer();
-  return { type: "png", bytes };
-}
-
-// ---- GENERAZIONE PDF ----
-
-// Singola
+// ----------------- PDF -----------------
 async function generateSingle() {
   const images = [...document.getElementById("imagesSingle").files];
-  if (images.length === 0) {
-    alert("Carica almeno un'immagine!");
-    return;
-  }
-  for (let img of images) {
-    await imageToPDF([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".pdf");
-  }
+  if (!images.length) return alert("Carica almeno un'immagine!");
+  for (let img of images) await imageToPDF([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".pdf");
 }
 
-// Griglia NxN in PDF
-async function generateGrid(n) {
-  const inputId =
-    n === 2 ? "imagesGrid2x2" :
-    n === 3 ? "imagesGrid3x3" :
-    n === 4 ? "imagesGrid4x4" :
-              "imagesGrid5x5";
-
-  const frameId =
-    n === 2 ? "frameGrid2x2" :
-    n === 3 ? "frameGrid3x3" :
-    n === 4 ? "frameGrid4x4" :
-              "frameGrid5x5";
-
-  let images = [...document.getElementById(inputId).files];
-  const needed = n * n;
-  if (images.length < needed) {
-    alert(`Carica almeno ${needed} immagini!`);
-    return;
-  }
-
-  images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, needed);
-
-  const { PDFDocument } = PDFLib;
-  const pdfDoc = await PDFDocument.create();
-  pdfDoc.addPage([9843, 13780]);
-  const page = pdfDoc.getPage(0);
-
-  // Cornice (user o default)
-  const frame = await getFrameForPdf(frameId);
-  const frameImg = frame.type === "png"
-    ? await pdfDoc.embedPng(frame.bytes)
-    : await pdfDoc.embedJpg(frame.bytes);
-  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
-
-  // Area utile centrale (70x100 cm @ 250 DPI)
-  const totalW = 6890, totalH = 9843;
-  const startX = (9843 - totalW) / 2;
-  const startY = (13780 - totalH) / 2;
-
-  // Spaziatura armonica
-  let SPACING;
-  if (n === 2) SPACING = 150;
-  else if (n === 3) SPACING = 100;
-  else if (n === 4) SPACING = 70;
-  else if (n === 5) SPACING = 40;
-
-  const cellW = (totalW - (n - 1) * SPACING) / n;
-  const cellH = (totalH - (n - 1) * SPACING) / n;
-
-  for (let i = 0; i < images.length; i++) {
-    const row = Math.floor(i / n);
-    const col = i % n;
-
-    const prepared = await prepareFileForPdf(images[i]);
-    const embedded = prepared.type === "png"
-      ? await pdfDoc.embedPng(prepared.bytes)
-      : await pdfDoc.embedJpg(prepared.bytes);
-
-    page.drawImage(embedded, {
-      x: startX + col * (cellW + SPACING),
-      y: startY + (n - row - 1) * (cellH + SPACING),
-      width: cellW,
-      height: cellH
-    });
-  }
-
-  const pdfBytes = await pdfDoc.save();
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `griglia${n}x${n}.pdf`;
-  link.click();
-}
-
-// Utility singola PDF
 async function imageToPDF(imageFiles, frameInputId, filename) {
   const { PDFDocument } = PDFLib;
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.addPage([9843, 13780]);
-  const page = pdfDoc.getPage(0);
+  const page = pdfDoc.addPage([9843, 13780]);
 
-  const frame = await getFrameForPdf(frameInputId);
-  const frameImg = frame.type === "png"
-    ? await pdfDoc.embedPng(frame.bytes)
-    : await pdfDoc.embedJpg(frame.bytes);
-  page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
+  const frame = await fetch(DEFAULT_FRAME_PATH).then(r=>r.arrayBuffer());
+  const frameImg = await pdfDoc.embedPng(frame);
+  page.drawImage(frameImg,{x:0,y:0,width:9843,height:13780});
 
-  const w = 6890, h = 9843;
-  const x = (9843 - w) / 2;
-  const y = (13780 - h) / 2;
-
-  for (let file of imageFiles) {
-    const prepared = await prepareFileForPdf(file);
-    const embedded = prepared.type === "png"
-      ? await pdfDoc.embedPng(prepared.bytes)
-      : await pdfDoc.embedJpg(prepared.bytes);
-
-    page.drawImage(embedded, { x, y, width: w, height: h });
+  const w=6890,h=9843,x=(9843-w)/2,y=(13780-h)/2;
+  for(let file of imageFiles){
+    const bytes=await file.arrayBuffer();
+    const embedded=await pdfDoc.embedJpg(bytes);
+    page.drawImage(embedded,{x,y,width:w,height:h});
   }
-
-  const pdfBytes = await pdfDoc.save();
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
+  const blob=new Blob([await pdfDoc.save()],{type:"application/pdf"});
+  const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=filename;link.click();
 }
 
-// ---- GENERAZIONE JPG ----
+async function generateGrid(cols,rows) {
+  const id=`imagesGrid${cols}x${rows}`;
+  const frameId=`frameGrid${cols}x${rows}`;
+  let images=[...document.getElementById(id).files];
+  if(images.length<cols*rows) return alert(`Carica almeno ${cols*rows} immagini!`);
+  images=images.sort((a,b)=>a.name.localeCompare(b.name)).slice(0,cols*rows);
 
-// Singola
+  const {PDFDocument}=PDFLib;
+  const pdfDoc=await PDFDocument.create();
+  const page=pdfDoc.addPage([9843,13780]);
+
+  const frame=await fetch(DEFAULT_FRAME_PATH).then(r=>r.arrayBuffer());
+  const frameImg=await pdfDoc.embedPng(frame);
+  page.drawImage(frameImg,{x:0,y:0,width:9843,height:13780});
+
+  const totalW=6890,totalH=9843;
+  const startX=(9843-totalW)/2,startY=(13780-totalH)/2;
+  let SPACING=80;if(cols===2&&rows===2)SPACING=150;else if(cols===3&&rows===3)SPACING=100;else if(cols===4&&rows===4)SPACING=70;else if(cols===5&&rows===5)SPACING=40;
+  const cellW=(totalW-(cols-1)*SPACING)/cols,cellH=(totalH-(rows-1)*SPACING)/rows;
+
+  for(let i=0;i<images.length;i++){
+    const r=Math.floor(i/cols),c=i%cols;
+    const bytes=await images[i].arrayBuffer();
+    const embedded=await pdfDoc.embedJpg(bytes);
+    page.drawImage(embedded,{x:startX+c*(cellW+SPACING),y:startY+(rows-r-1)*(cellH+SPACING),width:cellW,height:cellH});
+  }
+  const blob=new Blob([await pdfDoc.save()],{type:"application/pdf"});
+  const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`griglia${cols}x${rows}.pdf`;link.click();
+}
+
+// ----------------- JPG -----------------
 async function generateSingleJpg() {
-  const images = [...document.getElementById("imagesSingle").files];
-  if (images.length === 0) {
-    alert("Carica almeno un'immagine!");
-    return;
-  }
-  for (let img of images) {
-    await imageToJPG([img], "frameSingle", img.name.replace(/\.[^/.]+$/, "") + ".jpg");
-  }
+  const images=[...document.getElementById("imagesSingle").files];
+  if(!images.length)return alert("Carica almeno un'immagine!");
+  for(let img of images) await imageToJPG([img],"frameSingle",img.name.replace(/\.[^/.]+$/, "")+".jpg");
 }
 
-// Griglia NxN in JPG
-async function generateGridJpg(n) {
-  const inputId =
-    n === 2 ? "imagesGrid2x2" :
-    n === 3 ? "imagesGrid3x3" :
-    n === 4 ? "imagesGrid4x4" :
-              "imagesGrid5x5";
-
-  const frameId =
-    n === 2 ? "frameGrid2x2" :
-    n === 3 ? "frameGrid3x3" :
-    n === 4 ? "frameGrid4x4" :
-              "frameGrid5x5";
-
-  let images = [...document.getElementById(inputId).files];
-  const needed = n * n;
-  if (images.length < needed) {
-    alert(`Carica almeno ${needed} immagini!`);
-    return;
-  }
-
-  images = images.sort((a, b) => a.name.localeCompare(b.name)).slice(0, needed);
-  await gridToJPG(images, frameId, n, `griglia${n}x${n}.jpg`);
-}
-
-// Utility singola JPG
 async function imageToJPG(imageFiles, frameInputId, filename) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 9843;
-  canvas.height = 13780;
-  const ctx = canvas.getContext("2d");
-
-  // Cornice
-  const frameFile = document.getElementById(frameInputId)?.files[0];
-  const frameImg = new Image();
-  frameImg.src = frameFile ? URL.createObjectURL(frameFile) : DEFAULT_FRAME_PATH;
-  await frameImg.decode();
-  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-  if (frameFile) URL.revokeObjectURL(frameImg.src);
-
-  const w = 6890, h = 9843;
-  const x = (9843 - w) / 2;
-  const y = (13780 - h) / 2;
-
-  for (let file of imageFiles) {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    ctx.drawImage(img, x, y, w, h);
-    URL.revokeObjectURL(url);
-  }
-
-  const link = document.createElement("a");
-  link.href = canvas.toDataURL("image/jpeg", 0.9);
-  link.download = filename;
-  link.click();
+  const canvas=document.createElement("canvas");canvas.width=9843;canvas.height=13780;const ctx=canvas.getContext("2d");
+  const frameImg=await getFrameImage(frameInputId);ctx.drawImage(frameImg,0,0,canvas.width,canvas.height);
+  const w=6890,h=9843,x=(9843-w)/2,y=(13780-h)/2;
+  for(let file of imageFiles){const url=URL.createObjectURL(file);const img=new Image();img.src=url;await img.decode();ctx.drawImage(img,x,y,w,h);URL.revokeObjectURL(url);}
+  const link=document.createElement("a");link.href=canvas.toDataURL("image/jpeg",0.9);link.download=filename;link.click();
 }
 
-// Utility griglia JPG
-async function gridToJPG(images, frameInputId, n, filename) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 9843;
-  canvas.height = 13780;
-  const ctx = canvas.getContext("2d");
+async function generateGridJpg(cols,rows) {
+  const id=`imagesGrid${cols}x${rows}`,frameId=`frameGrid${cols}x${rows}`;
+  let images=[...document.getElementById(id).files];
+  if(images.length<cols*rows) return alert(`Carica almeno ${cols*rows} immagini!`);
+  images=images.sort((a,b)=>a.name.localeCompare(b.name)).slice(0,cols*rows);
 
-  // Cornice
-  const frameFile = document.getElementById(frameInputId)?.files[0];
-  const frameImg = new Image();
-  frameImg.src = frameFile ? URL.createObjectURL(frameFile) : DEFAULT_FRAME_PATH;
-  await frameImg.decode();
-  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-  if (frameFile) URL.revokeObjectURL(frameImg.src);
+  const canvas=document.createElement("canvas");canvas.width=9843;canvas.height=13780;const ctx=canvas.getContext("2d");
+  const frameImg=await getFrameImage(frameId);ctx.drawImage(frameImg,0,0,canvas.width,canvas.height);
 
-  const totalW = 6890, totalH = 9843;
-  const startX = (9843 - totalW) / 2;
-  const startY = (13780 - totalH) / 2;
+  const totalW=6890,totalH=9843,startX=(9843-totalW)/2,startY=(13780-totalH)/2;
+  let SPACING=80;if(cols===2&&rows===2)SPACING=150;else if(cols===3&&rows===3)SPACING=100;else if(cols===4&&rows===4)SPACING=70;else if(cols===5&&rows===5)SPACING=40;
+  const cellW=(totalW-(cols-1)*SPACING)/cols,cellH=(totalH-(rows-1)*SPACING)/rows;
 
-  let SPACING;
-  if (n === 2) SPACING = 150;
-  else if (n === 3) SPACING = 100;
-  else if (n === 4) SPACING = 70;
-  else if (n === 5) SPACING = 40;
-
-  const cellW = (totalW - (n - 1) * SPACING) / n;
-  const cellH = (totalH - (n - 1) * SPACING) / n;
-
-  for (let i = 0; i < images.length; i++) {
-    const row = Math.floor(i / n);
-    const col = i % n;
-    const url = URL.createObjectURL(images[i]);
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    ctx.drawImage(img, startX + col * (cellW + SPACING), startY + (n - row - 1) * (cellH + SPACING), cellW, cellH);
-    URL.revokeObjectURL(url);
-  }
-
-  const link = document.createElement("a");
-  link.href = canvas.toDataURL("image/jpeg", 0.9);
-  link.download = filename;
-  link.click();
+  for(let i=0;i<images.length;i++){const r=Math.floor(i/cols),c=i%cols;const url=URL.createObjectURL(images[i]);const img=new Image();img.src=url;await img.decode();ctx.drawImage(img,startX+c*(cellW+SPACING),startY+(rows-r-1)*(cellH+SPACING),cellW,cellH);URL.revokeObjectURL(url);}
+  const link=document.createElement("a");link.href=canvas.toDataURL("image/jpeg",0.9);link.download=`griglia${cols}x${rows}.jpg`;link.click();
 }
