@@ -11,6 +11,7 @@ function openTab(tabName, el) {
   el.classList.add("active");
 }
 
+// Imposta anteprime di default
 document.addEventListener("DOMContentLoaded", () => {
   [
     "previewFrameSingle",
@@ -19,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "previewFrameGrid3x3",
     "previewFrameGrid4x3",
     "previewFrameGrid4x4",
+    "previewFrameGrid4x5",
     "previewFrameGrid5x5"
   ].forEach(id => {
     const img = document.getElementById(id);
@@ -26,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Aggiorna anteprima cornice
 function previewFrame(input, imgId) {
   const preview = document.getElementById(imgId);
   if (input.files && input.files[0]) {
@@ -37,6 +40,7 @@ function previewFrame(input, imgId) {
   }
 }
 
+// Ottiene immagine cornice come <img>
 async function getFrameImage(frameInputId) {
   const frameFile = document.getElementById(frameInputId)?.files[0];
   const frameImg = new Image();
@@ -44,6 +48,23 @@ async function getFrameImage(frameInputId) {
   await frameImg.decode();
   if (frameFile) URL.revokeObjectURL(frameImg.src);
   return frameImg;
+}
+
+// Ottiene bytes della cornice per PDF
+async function getFrameBytes(frameInputId) {
+  const frameFile = document.getElementById(frameInputId)?.files[0];
+  if (frameFile) {
+    return await frameFile.arrayBuffer();
+  } else {
+    return await fetch(DEFAULT_FRAME_PATH).then(r => r.arrayBuffer());
+  }
+}
+
+// Tipo file cornice
+function frameFileType(frameInputId) {
+  const file = document.getElementById(frameInputId)?.files[0];
+  if (!file) return "png"; // default
+  return file.type.includes("png") ? "png" : "jpg";
 }
 
 // ----------------- Calcolo dimensioni -----------------
@@ -87,8 +108,13 @@ async function imageToPDF(imageFiles, frameInputId, filename) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([9843, 13780]);
 
-  const frame = await fetch(DEFAULT_FRAME_PATH).then(r => r.arrayBuffer());
-  const frameImg = await pdfDoc.embedPng(frame);
+  const frameBytes = await getFrameBytes(frameInputId);
+  let frameImg;
+  if (frameFileType(frameInputId) === "png") {
+    frameImg = await pdfDoc.embedPng(frameBytes);
+  } else {
+    frameImg = await pdfDoc.embedJpg(frameBytes);
+  }
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
   const w = AREA_W, h = AREA_H;
@@ -119,8 +145,14 @@ async function generateGrid(cols, rows) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([9843, 13780]);
 
-  const frame = await fetch(DEFAULT_FRAME_PATH).then(r => r.arrayBuffer());
-  const frameImg = await pdfDoc.embedPng(frame);
+  const frameInputId = `frameGrid${cols}x${rows}`;
+  const frameBytes = await getFrameBytes(frameInputId);
+  let frameImg;
+  if (frameFileType(frameInputId) === "png") {
+    frameImg = await pdfDoc.embedPng(frameBytes);
+  } else {
+    frameImg = await pdfDoc.embedJpg(frameBytes);
+  }
   page.drawImage(frameImg, { x: 0, y: 0, width: 9843, height: 13780 });
 
   const { cellW, cellH, offsetX, offsetY, GAP } = calculateCellSize(cols, rows);
