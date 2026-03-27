@@ -1,123 +1,464 @@
+/* ============================================================
+   SIGRA FILM – PosterMatic Creator
+   Colori dal logo: blu #1B3FA0, rosso #E31E24, verde #00A651, giallo #FFD700
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* ---------- Variabili ---------- */
+:root {
+  --blue:   #1B3FA0;
+  --red:    #E31E24;
+  --green:  #00A651;
+  --dark:   #0a0d1a;
+  --dark2:  #111627;
+  --dark3:  #1a2035;
+  --text:   #e8eaf0;
+  --text2:  #a0a8c0;
+  --stripe-h: 4px;
+}
+
+/* ---------- Reset & base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  font-family: 'Inter', Arial, sans-serif;
+  background: var(--dark);
   margin: 0;
-  padding: 0;
+  padding: 20px 10px 40px;
+  min-height: 100vh;
+  color: var(--text);
+  overflow-x: hidden;
 }
 
+/* Sfondo animato con particelle di luce */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(27,63,160,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(227,30,36,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 50% 50%, rgba(0,166,81,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: bgPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+  0%   { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ---------- Container ---------- */
 .container {
-  max-width: 900px;
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
   margin: auto;
-  background: white;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  background: var(--dark2);
+  border-radius: 16px;
+  padding: 0 0 32px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 8px 40px rgba(0,0,0,0.6),
+    0 0 80px rgba(27,63,160,0.15);
+  overflow: hidden;
 }
 
+/* Striscia colorata in cima (come il logo) */
+.container::before {
+  content: '';
+  display: block;
+  height: var(--stripe-h);
+  background: linear-gradient(90deg,
+    var(--blue)  0%   34%,
+    var(--red)   34%  67%,
+    var(--green) 67%  100%
+  );
+  background-size: 200% 100%;
+  animation: stripeScroll 4s linear infinite;
+}
+
+@keyframes stripeScroll {
+  0%   { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ---------- Header ---------- */
 .header {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 20px;
+  padding: 28px 24px 20px;
+  background: linear-gradient(135deg, rgba(27,63,160,0.15), transparent 70%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: relative;
 }
+
+/* Pellicola decorativa (sprocket holes) ai lati dell'header */
+.header::before,
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 18px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 8px,
+    rgba(255,255,255,0.08) 8px,
+    rgba(255,255,255,0.08) 18px,
+    transparent 18px,
+    transparent 26px
+  );
+}
+.header::before { left: 0; }
+.header::after  { right: 0; }
 
 .logo-fumetto {
-  height: 2.2em;   /* proporzionato al titolo */
+  height: 52px;
   width: auto;
-  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(27,63,160,0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-@media (max-width: 600px) {
-  .logo-fumetto {
-    height: 35px;  /* più piccolo su smartphone */
-  }
+.logo-fumetto:hover {
+  transform: scale(1.07) rotate(-1deg);
+  box-shadow: 0 6px 24px rgba(27,63,160,0.7);
 }
 
 .header h1 {
-  font-size: 1.8em;
+  font-family: 'Oswald', sans-serif;
+  font-size: 2em;
+  font-weight: 700;
   margin: 0;
   text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, #a8c0ff 50%, #7de8b0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleShimmer 6s linear infinite;
+  background-size: 200% auto;
+}
+
+@keyframes titleShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 .header small {
-  font-size: 0.6em;
-  color: #444;
+  font-size: 0.45em;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  -webkit-text-fill-color: var(--text2);
 }
 
-/* Pulsanti numerici */
-.tabs {
+/* ---------- Contatti ---------- */
+.contact-bar {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 20px 0;
+  flex-wrap: wrap;
+  margin: 20px 16px 0;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 50px;
+  font-size: 0.82em;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-link svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.contact-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--blue), #2d5be3);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.contact-link--wa::before {
+  background: linear-gradient(135deg, #1a6e1a, var(--green));
+}
+
+.contact-link > * { position: relative; z-index: 1; }
+
+.contact-link:hover::before { opacity: 1; }
+.contact-link:hover {
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(27,63,160,0.5);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.contact-link--wa:hover {
+  box-shadow: 0 4px 16px rgba(0,166,81,0.5);
+}
+
+/* ---------- Tabs (pulsanti numerici) ---------- */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 16px 0;
   flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  background: #ccc;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
   cursor: pointer;
-  font-size: 1em;
-  font-weight: bold;
-  transition: background 0.3s;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.tab-btn.active {
-  background: #28a745;
-  color: #fff;
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
 }
 
 .tab-btn:hover {
-  background: #999;
+  background: rgba(27,63,160,0.25);
+  border-color: rgba(27,63,160,0.5);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(27,63,160,0.3);
 }
 
-/* Contenuti */
+.tab-btn:hover::after { transform: scaleX(1); }
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--blue) 0%, #2d5be3 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow:
+    0 4px 16px rgba(27,63,160,0.5),
+    0 0 0 1px rgba(255,255,255,0.1);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active::after {
+  background: var(--green);
+  transform: scaleX(1);
+}
+
+/* ---------- Contenuto tab ---------- */
 .tab-content {
   display: none;
+  padding: 28px 28px 8px;
+  animation: fadeSlide 0.35s ease;
 }
 
-.tab-content.active {
-  display: block;
+.tab-content.active { display: block; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Input file */
+.tab-content h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.4em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 20px;
+  color: var(--text);
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+}
+
+.tab-content h2::before {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, var(--red), var(--green));
+  border-radius: 2px;
+}
+
+/* ---------- Labels & input ---------- */
 label {
-  display: block;
-  margin: 15px 0;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 label input[type="file"] {
-  margin-left: 10px;
+  flex: 1;
+  min-width: 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
 }
 
-.preview-frame {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 15px;
-  height: 50px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+label input[type="file"]:hover {
+  border-color: rgba(27,63,160,0.6);
+  background: rgba(27,63,160,0.1);
 }
 
-/* Pulsanti azione */
-button {
-  margin: 10px 5px;
-  padding: 10px 20px;
+label input[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, var(--blue), #2d5be3);
+  color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 1em;
+  padding: 5px 14px;
+  font-size: 0.85em;
+  font-weight: 600;
   cursor: pointer;
+  margin-right: 10px;
+  transition: opacity 0.2s;
 }
 
+label input[type="file"]::file-selector-button:hover { opacity: 0.85; }
+
+.preview-frame {
+  height: 48px;
+  width: auto;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.2s;
+}
+
+.preview-frame:hover { transform: scale(1.1); }
+
+/* ---------- Pulsanti azione (PDF / JPG) ---------- */
+button {
+  margin: 8px 6px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+
+button:hover::after  { background: rgba(255,255,255,0.1); }
+button:active::after { background: rgba(0,0,0,0.12); }
+
+button:hover  { transform: translateY(-3px); }
+button:active { transform: translateY(0); }
+
 .btn-pdf {
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--blue) 0%, #2d5be3 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(27,63,160,0.4);
+}
+
+.btn-pdf:hover {
+  box-shadow: 0 8px 24px rgba(27,63,160,0.6);
 }
 
 .btn-jpg {
-  background: orange;
-  color: white;
+  background: linear-gradient(135deg, var(--red) 0%, #ff6b6b 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(227,30,36,0.4);
+}
+
+.btn-jpg:hover {
+  box-shadow: 0 8px 24px rgba(227,30,36,0.6);
+}
+
+/* Pulsare continuo sul btn attivo */
+.btn-pdf::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue), var(--green), var(--blue));
+  background-size: 200% 200%;
+  animation: borderAnim 3s linear infinite;
+  z-index: -1;
+}
+
+@keyframes borderAnim {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .logo-fumetto { height: 38px; }
+
+  .header h1 { font-size: 1.4em; }
+
+  .tab-btn { padding: 8px 13px; font-size: 1em; }
+
+  .tab-content { padding: 20px 16px 8px; }
+
+  button { padding: 11px 20px; font-size: 0.95em; }
+
+  label { font-size: 0.82em; }
+}
+
+/* ---------- Scrollbar personalizzata ---------- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--blue), var(--green));
+  border-radius: 3px;
 }
